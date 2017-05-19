@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -23,6 +24,21 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void startMainActivity() {
         startActivity(new Intent(this,MainActivity.class));
+        //关闭当前页面
         finish();
+    }
+
+    //设置触摸事件
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        startMainActivity();
+        return super.onTouchEvent(event);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //移除消息
+        handler.removeCallbacksAndMessages(null);
     }
 }
