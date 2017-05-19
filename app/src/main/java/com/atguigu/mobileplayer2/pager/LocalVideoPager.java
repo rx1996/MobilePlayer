@@ -2,6 +2,7 @@ package com.atguigu.mobileplayer2.pager;
 
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.atguigu.mobileplayer2.R;
+import com.atguigu.mobileplayer2.activity.SystemVideoPlayerActivity;
 import com.atguigu.mobileplayer2.adapter.LocalVideoAdapter;
 import com.atguigu.mobileplayer2.domain.MediaItem;
 import com.atguigu.mobileplayer2.fragment.BaseFragment;
@@ -44,6 +46,10 @@ public class LocalVideoPager extends BaseFragment {
                 //MediaItem mediaItem = mediaItems.get(position);
                 MediaItem item = adapter.getItem(position);
                 Toast.makeText(context, ""+item.toString(), Toast.LENGTH_SHORT).show();
+                //把系统的播放器调起来
+                Intent intent = new Intent(context,SystemVideoPlayerActivity.class);
+                intent.setDataAndType(Uri.parse(item.getData()),"video/*");
+                startActivity(intent);
             }
         });
         return view;
@@ -84,6 +90,7 @@ public class LocalVideoPager extends BaseFragment {
                         MediaStore.Video.Media.SIZE,//视频文件的大小
                         MediaStore.Video.Media.DATA//视频播放地址
                 };
+
                 Cursor cursor = resolver.query(uri, objs, null, null, null);
                 if(cursor != null ){
                     while (cursor.moveToNext()){
