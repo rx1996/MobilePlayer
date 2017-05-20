@@ -3,6 +3,8 @@ package com.atguigu.mobileplayer2.activity;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -15,8 +17,10 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.atguigu.mobileplayer2.R;
+import com.atguigu.mobileplayer2.utils.Utils;
 
 public class SystemVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final int PROGRESS = 0;
     private VideoView vv;
     private Uri uri;
 
@@ -36,6 +40,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private Button btnStartPause;
     private Button btnNext;
     private Button btnSwitchScreen;
+    private Utils utils;
 
     /**
      * Find the Views in the layout<br />
@@ -93,12 +98,38 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 vv.start();
                 btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
             }
+        }else if ( v == btnNext ) {
+            // Handle clicks for btnNext
+        } else if ( v == btnSwitchScreen ) {
+            // Handle clicks for btnSwitchScreen
         }
     }
 
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case PROGRESS:
+                    //得到当前进度
+                    int currentPosition = vv.getCurrentPosition();
+                    //让SeekBar进度更新
+                    seekbarVideo.setProgress(currentPosition);
+
+                    //设置文本当前的播放进度
+                    tvCurrentTime.setText(utils.stringForTime(currentPosition));
+
+                    //循环发消息
+                    sendEmptyMessageDelayed(PROGRESS,1000);
+
+                    break;
+            }
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        utils = new Utils();
        findViews();
 
         //得到播放地址
@@ -118,7 +149,14 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             //底层准备播放完成的时候回调
             @Override
             public void onPrepared(MediaPlayer mp) {
+                //得到视频的总时长
+                int duration = vv.getDuration();
+                seekbarVideo.setMax(duration);
+                //设置文本总时间
+                tvDuration.setText(utils.stringForTime(duration));
                 vv.start();//开始播放
+                //发消息开始更新播放进度
+                handler.sendEmptyMessage(PROGRESS);
             }
         });
 
@@ -164,5 +202,11 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
             }
         });
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //把所有消息移除
+        handler.removeCallbacksAndMessages(null);
     }
 }
