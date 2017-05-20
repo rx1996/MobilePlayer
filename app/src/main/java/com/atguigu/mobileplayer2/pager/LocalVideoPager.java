@@ -4,19 +4,16 @@ package com.atguigu.mobileplayer2.pager;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.atguigu.mobileplayer2.R;
 import com.atguigu.mobileplayer2.activity.SystemVideoPlayerActivity;
@@ -35,7 +32,6 @@ public class LocalVideoPager extends BaseFragment {
 
     @Override
     public View initView() {
-        Log.e("TAG","LocalAudioPager-initView");
         View  view = View.inflate(context, R.layout.fragment_local_video_pager,null);
         lv = (ListView) view.findViewById(R.id.lv);
         tv_nodata = (TextView) view.findViewById(R.id.tv_nodata);
@@ -55,6 +51,7 @@ public class LocalVideoPager extends BaseFragment {
                 Intent intent = new Intent(context,SystemVideoPlayerActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("videolist",mediaItems);
+                intent.putExtra("position",position);
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
@@ -65,7 +62,6 @@ public class LocalVideoPager extends BaseFragment {
     @Override
     public void initData() {
         super.initData();
-        Log.e("TAG","LocalAudioPager-initData");
         getData();
     }
     private Handler handler = new Handler(){

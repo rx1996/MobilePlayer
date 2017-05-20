@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addFragment(BaseFragment currentFragment) {
+    private void addFragment(Fragment currentFragment) {
         if(tempFragment != currentFragment) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 

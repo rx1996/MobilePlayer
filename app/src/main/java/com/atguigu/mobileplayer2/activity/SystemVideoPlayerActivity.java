@@ -55,7 +55,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private MyBroadCastReceiver receiver;
 
     private int position;
-    private Object data;
 
     /**
      * Find the Views in the layout<br />
@@ -105,8 +104,10 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         } else if ( v == btnSwitchPlayer ) {
             // Handle clicks for btnSwitchPlayer
         } else if ( v == btnExit ) {
+            finish();
             // Handle clicks for btnExit
         } else if ( v == btnPre ) {
+            setPreVideo();
             // Handle clicks for btnPre
         } else if ( v == btnStartPause ) {
             if(vv.isPlaying()){
@@ -122,6 +123,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             }
             // Handle clicks for btnStartPause
         } else if ( v == btnNext ) {
+            setNextVideo();
             // Handle clicks for btnNext
         } else if ( v == btnSwitchScreen ) {
             // Handle clicks for btnSwitchScreen
@@ -171,13 +173,13 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
         findViews();
         getData();
-
+        setListener();
         setData();
         //得到播放地址
-        uri = getIntent().getData();
-        setListener();
+      //  uri = getIntent().getData();
+
         //设置播放地址
-        vv.setVideoURI(uri);
+     //   vv.setVideoURI(uri);
 
         //设置控制面板
 //        vv.setMediaController(new MediaController(this));
@@ -194,6 +196,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             //设置播放地址
             vv.setVideoURI(uri);
         }
+        setButtonStatus();
     }
     private void getData(){
         uri = getIntent().getData();
@@ -275,8 +278,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Toast.makeText(SystemVideoPlayerActivity.this, "视频播放完成", Toast.LENGTH_SHORT).show();
-                finish();//退出当前页面
+//                Toast.makeText(SystemVideoPlayerActivity.this, "视频播放完成", Toast.LENGTH_SHORT).show();
+//                finish();//退出当前页面
+                setNextVideo();
             }
         });
 
@@ -308,6 +312,57 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         });
     }
 
+    private void setPreVideo(){
+        position--;
+        if(position > 0) {
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+            setButtonStatus();
+        }
+    }
+    private void setNextVideo() {
+        position++;
+        if (position < mediaItems.size()) {
+            //还是在列表范围内容
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+            //设置按钮状态
+            setButtonStatus();
+        } else {
+            Toast.makeText(this, "退出播放器", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+    private void setButtonStatus(){
+        if(mediaItems != null && mediaItems.size() > 0) {
+            setEnable(true);
+
+            if(position == 0) {
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                btnPre.setEnabled(false);
+            }
+            if(position == mediaItems.size() -1) {
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                btnNext.setEnabled(false);
+            }
+        }else if(uri != null) {
+            setEnable(false);
+        }
+    }
+    
+    private void setEnable(boolean b){
+        if(b) {
+            btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
+            btnNext.setBackgroundResource(R.drawable.btn_next_selector);
+        }else {
+            btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+            btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+        }
+        btnPre.setEnabled(b);
+        btnNext.setEnabled(b);
+    }
     @Override
     protected void onDestroy() {
 
