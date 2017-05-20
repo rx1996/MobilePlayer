@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -44,11 +45,17 @@ public class LocalVideoPager extends BaseFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //得到点击item对应的对象
                 //MediaItem mediaItem = mediaItems.get(position);
-                MediaItem item = adapter.getItem(position);
-                Toast.makeText(context, ""+item.toString(), Toast.LENGTH_SHORT).show();
-                //把系统的播放器调起来
+//                MediaItem item = adapter.getItem(position);
+//                Toast.makeText(context, ""+item.toString(), Toast.LENGTH_SHORT).show();
+//                //把系统的播放器调起来
+//                Intent intent = new Intent(context,SystemVideoPlayerActivity.class);
+//                intent.setDataAndType(Uri.parse(item.getData()),"video/*");
+              //  startActivity(intent);
+                //传视频列表
                 Intent intent = new Intent(context,SystemVideoPlayerActivity.class);
-                intent.setDataAndType(Uri.parse(item.getData()),"video/*");
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("videolist",mediaItems);
+                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });

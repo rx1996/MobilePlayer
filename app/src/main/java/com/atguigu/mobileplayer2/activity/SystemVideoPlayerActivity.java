@@ -21,9 +21,11 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.atguigu.mobileplayer2.R;
+import com.atguigu.mobileplayer2.domain.MediaItem;
 import com.atguigu.mobileplayer2.utils.Utils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class SystemVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
@@ -31,6 +33,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private static final int PROGRESS = 0;
     private VideoView vv;
     private Uri uri;
+    private ArrayList<MediaItem> mediaItems;
 
     private LinearLayout llTop;
     private TextView tvName;
@@ -50,6 +53,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private Button btnSwitchScreen;
     private Utils utils;
     private MyBroadCastReceiver receiver;
+
+    private int position;
+    private Object data;
 
     /**
      * Find the Views in the layout<br />
@@ -164,8 +170,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         initData();
 
         findViews();
+        getData();
 
-
+        setData();
         //得到播放地址
         uri = getIntent().getData();
         setListener();
@@ -176,8 +183,22 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 //        vv.setMediaController(new MediaController(this));
 
 
+    }
 
-
+    private void setData() {
+        if(mediaItems != null && mediaItems.size() > 0 ) {
+            MediaItem mediaItem = mediaItems.get(position);
+            tvName.setText(mediaItem.getName());
+            vv.setVideoPath(mediaItem.getData());
+        }else if(uri != null) {//只有一个地址
+            //设置播放地址
+            vv.setVideoURI(uri);
+        }
+    }
+    private void getData(){
+        uri = getIntent().getData();
+        mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
+        position = getIntent().getIntExtra("position" , 0);
     }
 
     private void initData() {
@@ -190,6 +211,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         registerReceiver(receiver,intentFilter);
     }
+
 
     class MyBroadCastReceiver extends BroadcastReceiver{
 
