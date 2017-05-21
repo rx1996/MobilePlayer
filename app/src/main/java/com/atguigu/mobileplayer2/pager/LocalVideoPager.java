@@ -104,11 +104,12 @@ public class LocalVideoPager extends BaseFragment {
                         Log.e("TAG","name=="+name+",duration=="+duration+",data==="+data);
                         mediaItems.add(new MediaItem(name,duration,size,data));
 
-                        //使用handler
-                        handler.sendEmptyMessage(0);
+
                     }
                     cursor.close();
                 }
+                //使用handler
+                handler.sendEmptyMessage(0);
             }
         }.start();
     }
