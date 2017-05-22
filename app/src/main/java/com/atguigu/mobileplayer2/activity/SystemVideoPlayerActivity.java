@@ -65,6 +65,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private Button btnSwitchScreen;
     private Utils utils;
     private MyBroadCastReceiver receiver;
+    private LinearLayout ll_buffering;
+    private TextView tv_net_speed;
 
     private int position;
 
@@ -114,6 +116,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         btnNext = (Button)findViewById( R.id.btn_next );
         btnSwitchScreen = (Button)findViewById( R.id.btn_switch_screen );
         vv = (VideoView)findViewById(R.id.vv);
+        ll_buffering = (LinearLayout) findViewById(R.id.ll_buffering);
+        tv_net_speed = (TextView) findViewById(R.id.tv_net_speed);
 
         btnVoice.setOnClickListener( this );
         btnSwitchPlayer.setOnClickListener( this );
@@ -225,6 +229,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
         }
     }
+    private int preCurrentPosition;
 
     private Handler handler = new Handler(){
         @Override
@@ -251,6 +256,17 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                         seekbarVideo.setSecondaryProgress(secondaryProgress);
                     }else{
                         seekbarVideo.setSecondaryProgress(0);
+                    }
+                    if(isNetUri && vv.isPlaying()){
+
+                        int duration = currentPosition - preCurrentPosition;
+                        if(duration <500){
+                            ll_buffering.setVisibility(View.VISIBLE);
+                        }else{
+                            ll_buffering.setVisibility(View.GONE);
+                        }
+
+                        preCurrentPosition = currentPosition;
                     }
 
                     //循环发消息
