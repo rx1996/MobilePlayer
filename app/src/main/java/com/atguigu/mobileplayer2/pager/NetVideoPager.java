@@ -153,6 +153,7 @@ public class NetVideoPager extends BaseFragment {
 
     }
 
+
     /**
      * 解析json数据和显示数据
      * @param json
