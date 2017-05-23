@@ -305,6 +305,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                         preCurrentPosition = currentPosition;
                     }
 
+                    handler.removeMessages(PROGRESS);
                     //循环发消息
                     sendEmptyMessageDelayed(PROGRESS,1000);
 
