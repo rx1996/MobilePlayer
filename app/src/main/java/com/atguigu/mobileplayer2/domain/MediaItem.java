@@ -12,6 +12,9 @@ public class MediaItem implements Serializable{
     private long size;
     private String data;
 
+    public MediaItem() {
+    }
+
     public String getName() {
         return name;
     }

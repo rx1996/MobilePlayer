@@ -3,6 +3,7 @@ package com.atguigu.mobileplayer2.pager;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import com.atguigu.mobileplayer2.R;
 import com.atguigu.mobileplayer2.activity.SystemVideoPlayerActivity;
 import com.atguigu.mobileplayer2.adapter.NetVideoAdapter;
+import com.atguigu.mobileplayer2.domain.MediaItem;
 import com.atguigu.mobileplayer2.domain.MoveInfo;
 import com.atguigu.mobileplayer2.fragment.BaseFragment;
 import com.google.gson.Gson;
@@ -21,6 +23,7 @@ import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -29,6 +32,8 @@ public class NetVideoPager extends BaseFragment {
     private ListView lv;
     private TextView tv_nodata;
     private NetVideoAdapter adapter;
+    private ArrayList<MediaItem> mediaItems;
+
 
     //重写视图
     @Override
@@ -42,10 +47,19 @@ public class NetVideoPager extends BaseFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 MoveInfo.TrailersBean item = adapter.getItem(position);
+//
+//                Intent intent = new Intent(context, SystemVideoPlayerActivity.class);
+//                intent.setDataAndType(Uri.parse(item.getUrl()),"video/*");
+//                startActivity(intent);
 
-                Intent intent = new Intent(context, SystemVideoPlayerActivity.class);
-                intent.setDataAndType(Uri.parse(item.getUrl()),"video/*");
+                Intent intent = new Intent(context,SystemVideoPlayerActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("videolist",mediaItems);
+                intent.putExtra("position",position);
+                intent.putExtras(bundle);
                 startActivity(intent);
+
+
 
             }
         });
@@ -101,9 +115,23 @@ public class NetVideoPager extends BaseFragment {
             //有数据-适配器
             adapter = new NetVideoAdapter(context,datas);
             lv.setAdapter(adapter);
+
+            mediaItems = new ArrayList<>();
+            for(int i = 0; i <datas.size() ; i++) {
+                MediaItem mediaItem = new MediaItem();
+                mediaItem.setData(datas.get(i).getUrl());
+                mediaItem.setName(datas.get(i).getMovieName());
+                mediaItems.add(mediaItem);
+
+            }
+
         }else{
             tv_nodata.setVisibility(View.VISIBLE);
         }
+
+
+
+
 
     }
 }
