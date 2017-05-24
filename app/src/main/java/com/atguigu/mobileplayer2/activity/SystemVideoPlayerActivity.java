@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -98,6 +100,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private boolean isMute = false;
 
     private boolean isNetUri = true;
+    private int brightness;
+
     /**
      * Find the Views in the layout<br />
      * <br />
@@ -425,9 +429,11 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         maxVoice = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
     }
     private  float startY;
+    private float startX;
     private float touchRang;
     //按下时候的音量
     private  int mVol;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
@@ -435,11 +441,12 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         detector.onTouchEvent(event);
         switch (event.getAction()) {
             //手指按下屏幕
-            case MotionEvent.ACTION_DOWN :
+            case MotionEvent.ACTION_DOWN:
                 //记录相关的值
                 //按下时候的坐标
                 startY = event.getY();
-                touchRang = Math.min(screenWidth,screenHeight);
+                startX = event.getX();
+                touchRang = Math.min(screenWidth, screenHeight);
                 mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
                 //移除消息
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
@@ -450,17 +457,30 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 float endY = event.getY();
                 //屏幕滑动的距离
                 float distanceY = startY - endY;
-                //要改变的声音 = (滑动的距离 / 总距离)*最大音量
-                float delta = (distanceY / touchRang) * maxVoice;
-                //最终声音 = 原来的声音 + 要改变的声音
-                float volume = Math.min(Math.max(mVol + delta , 0) , maxVoice);
-                if(delta != 0){
-                    updateVoiceProgress((int) volume);
+                if (startX > screenWidth / 2) {
+                    //要改变的声音 = (滑动的距离 / 总距离)*最大音量
+                    float delta = (distanceY / touchRang) * maxVoice;
+                    //最终声音 = 原来的声音 + 要改变的声音
+                    float volume = Math.min(Math.max(mVol + delta, 0), maxVoice);
+                    if (delta != 0) {
+                        updateVoiceProgress((int) volume);
+                    }
+                } else if (startX < screenWidth / 2) {
+                    final double FLING_MIN_DISTANCE = 0.5;
+                    final double FLING_MIN_VELOCITY = 0.5;
+                    if (distanceY > FLING_MIN_DISTANCE && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(10);
+                    }
+                    if (distanceY < FLING_MIN_DISTANCE && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(-10);
+                    }
+
+
                 }
 
                 break;
             case MotionEvent.ACTION_UP:
-                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
 
                 break;
         }
@@ -483,6 +503,18 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         llBottom.setVisibility(View.VISIBLE);
         llTop.setVisibility(View.VISIBLE);
         isShowMediaController = true;
+    }
+
+    public void setBrightness(int brightness) {
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.screenBrightness = lp.screenBrightness + brightness / 255.0f;
+        if (lp.screenBrightness > 1) {
+            lp.screenBrightness = 1;
+        } else if (lp.screenBrightness < 0.1) {
+            lp.screenBrightness = (float) 0.1;
+        }
+        getWindow().setAttributes(lp);
+
     }
 
     class MyBroadCastReceiver extends BroadcastReceiver{

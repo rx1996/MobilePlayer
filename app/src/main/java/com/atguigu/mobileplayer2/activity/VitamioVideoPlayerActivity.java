@@ -19,6 +19,7 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -324,19 +325,19 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
                         seekbarVideo.setSecondaryProgress(0);
                     }
 
-//                    if(isNetUri && vv.isPlaying()){
-//
-//                        int duration = currentPosition - preCurrentPosition;
-//                        if(duration <500){
-//                            //卡
-//                            ll_buffering.setVisibility(View.VISIBLE);
-//                        }else{
-//                            //不卡
-//                            ll_buffering.setVisibility(View.GONE);
-//                        }
-//
-//                        preCurrentPosition = currentPosition;
-//                    }
+                    if(isNetUri && vv.isPlaying()){
+
+                        int duration = currentPosition - preCurrentPosition;
+                        if(duration <500){
+                            //卡
+                            ll_buffering.setVisibility(View.VISIBLE);
+                        }else{
+                            //不卡
+                            ll_buffering.setVisibility(View.GONE);
+                        }
+
+                        preCurrentPosition = currentPosition;
+                    }
 
                     //循环发消息
                     sendEmptyMessageDelayed(PROGRESS, 1000);
@@ -469,6 +470,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
 
     //记录坐标
     private float dowY;
+    private float startX;
     //滑动的初始声音
     private int mVol;
     //滑动的最大区域
@@ -483,6 +485,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
             case MotionEvent.ACTION_DOWN:
                 //1.记录相关参数
                 dowY = event.getY();
+                startX = event.getX();
                 mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
                 touchRang = Math.min(screenHeight, screenWidth);//screenHeight
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
@@ -493,18 +496,26 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
                 //3.计算滑动的距离
                 float distanceY = dowY - endY;
                 //原理：在屏幕滑动的距离： 滑动的总距离 = 要改变的声音： 最大声音
-                //要改变的声音 = （在屏幕滑动的距离/ 滑动的总距离）*最大声音;
-                float delta = (distanceY / touchRang) * maxVoice;
+                if (startX > screenWidth / 2) {
+                    //要改变的声音 = (滑动的距离 / 总距离)*最大音量
+                    float delta = (distanceY / touchRang) * maxVoice;
+                    //最终声音 = 原来的声音 + 要改变的声音
+                    float volume = Math.min(Math.max(mVol + delta, 0), maxVoice);
+                    if (delta != 0) {
+                        updateVoiceProgress((int) volume);
+                    }
+                } else if (startX < screenWidth / 2) {
+                    final double FLING_MIN_DISTANCE = 0.5;
+                    final double FLING_MIN_VELOCITY = 0.5;
+                    if (distanceY > FLING_MIN_DISTANCE && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(10);
+                    }
+                    if (distanceY < FLING_MIN_DISTANCE && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(-10);
+                    }
 
 
-                if (delta != 0) {
-                    //最终声音 = 原来的+ 要改变的声音
-                    int mVoice = (int) Math.min(Math.max(mVol + delta, 0), maxVoice);
-                    //0~15
-
-                    updateVoiceProgress(mVoice);
                 }
-
 
                 //注意不要重新赋值
 //                dowY = event.getY();
@@ -536,6 +547,17 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         llBottom.setVisibility(View.VISIBLE);
         llTop.setVisibility(View.VISIBLE);
         isShowMediaController = true;
+    }
+
+    public void setBrightness(int brightness) {
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.screenBrightness = lp.screenBrightness + brightness / 255.0f;
+        if (lp.screenBrightness > 1) {
+            lp.screenBrightness = 1;
+        } else if (lp.screenBrightness < 0.1) {
+            lp.screenBrightness = (float) 0.1;
+        }
+        getWindow().setAttributes(lp);
     }
 
 
