@@ -1,7 +1,10 @@
 package com.atguigu.mobileplayer2.pager;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +30,8 @@ import java.util.List;
 
 
 public class NetVideoPager extends BaseFragment {
+    public static final String uri = "http://api.m.mtime.cn/PageSubArea/TrailerList.api";
+    private SharedPreferences sp;
     private ListView lv;
     private TextView tv_nodata;
     private NetVideoAdapter adapter;
@@ -41,6 +46,7 @@ public class NetVideoPager extends BaseFragment {
     //重写视图
     @Override
     public View initView() {
+        sp = context.getSharedPreferences("atguigu", Context.MODE_PRIVATE);
         Log.e("TAG","NetVideoPager-initView");
         View view = View.inflate(context, R.layout.fragment_net_video_pager,null);
         lv = (ListView) view.findViewById(R.id.lv);
@@ -119,6 +125,13 @@ public class NetVideoPager extends BaseFragment {
     public void initData() {
         super.initData();
         Log.e("TAG","NetVideoPager-initData");
+        //在联网之前加载本地缓存，如果有就解析
+        String saveJson = sp.getString(uri, "");
+        if(!TextUtils.isEmpty(saveJson)){
+            //解析缓存的数据
+            processData(saveJson);
+            Log.e("TAG","解析缓存的数据=="+saveJson);
+        }
         getDataFromNet();
     }
 
@@ -130,7 +143,9 @@ public class NetVideoPager extends BaseFragment {
             @Override
             public void onSuccess(String result) {
 
+                sp.edit().putString(uri,result).commit();
                 Log.e("TAG","xUtils联网成功=="+result);
+                //缓存数据
                 processData(result);
                 materialRefreshLayout.finishRefresh();
             }
