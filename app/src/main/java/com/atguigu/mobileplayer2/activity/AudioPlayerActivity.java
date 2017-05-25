@@ -122,6 +122,32 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         btnStartPause.setOnClickListener( this );
         btnNext.setOnClickListener( this );
         btnLyric.setOnClickListener( this );
+
+        //设置监听拖动音乐
+        seekbarAudio.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
+    }
+    class MyOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener{
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if(fromUser) {
+                try {
+                    service.seekTo(progress);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
+        }
     }
 
     /**
