@@ -266,6 +266,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void setViewData() {
+        setButtonImage();
         try {
             tvArtist.setText(service.getArtistName());
             tvAudioname.setText(service.getAudioName());

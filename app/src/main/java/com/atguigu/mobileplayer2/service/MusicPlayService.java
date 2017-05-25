@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -126,10 +127,13 @@ public class MusicPlayService extends Service {
     //播放模式
     private int playmode = REPEAT_NORMAL;
     private boolean isCompletion = false;
+    private SharedPreferences sp;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        sp = getSharedPreferences("atguigu",MODE_PRIVATE);
+        playmode = sp.getInt("playmode",getPlaymode());
         //加载列表数据
         getData();
     }
@@ -434,5 +438,6 @@ public class MusicPlayService extends Service {
     //设置播放模式
     public void setPlaymode(int playmode){
         this.playmode = playmode;
+        sp.edit().putInt("playmode",playmode).commit();
     }
 }
