@@ -79,6 +79,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             if(service != null) {
                 try {
                     if(notification) {
+                        //重新从Service获取数据
                         setViewData();
                     }else {
                         service.openAudio(position);
@@ -167,6 +168,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     public void onClick(View v) {
         if ( v == btnPlaymode ) {
             // Handle clicks for btnPlaymode
+            setPlayMode();
         } else if ( v == btnPre ) {
             // Handle clicks for btnPre
         } else if ( v == btnStartPause ) {
@@ -192,6 +194,40 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             // Handle clicks for btnLyric
         }
     }
+
+    private void setPlayMode() {
+        try {
+            int playmode = service.getPlaymode();
+            if(playmode == MusicPlayService.REPEAT_NORMAL) {
+                playmode = MusicPlayService.REPEAT_SINGLE;
+            }else if(playmode == MusicPlayService.REPEAT_SINGLE) {
+                playmode = MusicPlayService.REPEAT_ALL;
+            }else if(playmode == MusicPlayService.REPEAT_ALL) {
+                playmode = MusicPlayService.REPEAT_NORMAL;
+            }
+            //保存到服务里
+            service.setPlaymode(playmode);
+            setButtonImage();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setButtonImage() {
+        try {
+            int playmode = service.getPlaymode();
+            if(playmode == MusicPlayService.REPEAT_NORMAL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_normal_selector);
+            }else if(playmode == MusicPlayService.REPEAT_SINGLE) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_single_selector);
+            }else if(playmode == MusicPlayService.REPEAT_ALL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_all_selector);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

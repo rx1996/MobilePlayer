@@ -96,6 +96,17 @@ public class MusicPlayService extends Service {
         public boolean isPlaying() throws RemoteException {
             return mediaPlayer.isPlaying();
         }
+
+        @Override
+        public int getPlaymode() throws RemoteException {
+            return service.getPlaymode();
+        }
+
+        @Override
+        public void setPlaymode(int playmode) throws RemoteException {
+            service.setPlaymode(playmode);
+        }
+
     };
 
     private ArrayList<MediaItem> mediaItems;
@@ -104,7 +115,17 @@ public class MusicPlayService extends Service {
     private MediaItem mediaItem;
 
     public static final String OPEN_COMPLETE = "com.atguigu.mobileplayer2.service.MUSICPLAYSERVICE";
+    //通知服务管理
     private NotificationManager nm;
+    //顺序播放
+    public static final int REPEAT_NORMAL = 1;
+    //单曲播放
+    public static final int REPEAT_SINGLE = 2;
+    //列表循环播放
+    public static final int REPEAT_ALL = 3;
+    //播放模式
+    private int playmode = REPEAT_NORMAL;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -235,7 +256,7 @@ public class MusicPlayService extends Service {
         nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         Intent intent = new Intent(this, AudioPlayerActivity.class);
-        intent.putExtra("notification",true);
+        intent.putExtra("notification",true);//是否来自状态栏
         PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notifation = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.notification_music_playing)
@@ -320,5 +341,13 @@ public class MusicPlayService extends Service {
      * 播放上一个
      */
     private void pre() {
+    }
+    //得到播放模式
+    public int getPlaymode(){
+        return playmode;
+    }
+    //设置播放模式
+    public void setPlaymode(int playmode){
+        this.playmode = playmode;
     }
 }
