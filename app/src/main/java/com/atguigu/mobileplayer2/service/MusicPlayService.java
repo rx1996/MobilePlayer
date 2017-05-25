@@ -125,6 +125,7 @@ public class MusicPlayService extends Service {
     public static final int REPEAT_ALL = 3;
     //播放模式
     private int playmode = REPEAT_NORMAL;
+    private boolean isCompletion = false;
 
     @Override
     public void onCreate() {
@@ -206,6 +207,9 @@ public class MusicPlayService extends Service {
                     mediaPlayer.setOnCompletionListener(new MyOnCompletionListener());
                     //这个异步不写不播放音乐
                     mediaPlayer.prepareAsync();
+                    if(playmode== MusicPlayService.REPEAT_SINGLE){
+                        isCompletion = false;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -244,6 +248,7 @@ public class MusicPlayService extends Service {
 
         @Override
         public void onCompletion(MediaPlayer mp) {
+            isCompletion = true;
             next();
         }
     }
@@ -335,13 +340,93 @@ public class MusicPlayService extends Service {
      * 播放下一个
      */
     private void next() {
+        //根据不同的播放模式设置不同的下标位置
+        setNextPosition();
+        //根据不同的下标位置打开对应的音频并播放
+        openNextPosition();
+    }
+
+    private void openNextPosition() {
+        int playmode = getPlaymode();
+        if(playmode == MusicPlayService.REPEAT_NORMAL) {
+            if(position < mediaItems.size()) {
+                openAudio(position);
+            }else {
+                position = mediaItems.size() - 1;
+            }
+        }else if(playmode == MusicPlayService.REPEAT_SINGLE) {
+            if(position < mediaItems.size()) {
+                openAudio(position);
+            }else {
+                position = mediaItems.size() - 1;
+            }
+        }else if(playmode == MusicPlayService.REPEAT_ALL) {
+            openAudio(position);
+        }
+    }
+
+    private void setNextPosition() {
+        int playmode = getPlaymode();
+        if(playmode == MusicPlayService.REPEAT_NORMAL) {
+            position++;
+        }else if(playmode == MusicPlayService.REPEAT_SINGLE) {
+            if(!isCompletion) {
+                position++;
+            }
+
+        }else if(playmode == MusicPlayService.REPEAT_ALL) {
+            position++;
+            if(position > mediaItems.size() - 1) {
+                position = 0;
+            }
+        }
     }
 
     /**
      * 播放上一个
      */
     private void pre() {
+        setPrePosition();
+        openPrePosition();
     }
+
+    private void openPrePosition() {
+        int playmode = getPlaymode();
+
+        if (playmode == MusicPlayService.REPEAT_NORMAL) {
+            if(position >= 0){
+                openAudio(position);
+            }else{
+                position = 0;
+            }
+        } else if (playmode == MusicPlayService.REPEAT_SINGLE) {
+            if(position >=0 ){
+                openAudio(position);
+            }else{
+                position = 0;
+            }
+        } else if (playmode == MusicPlayService.REPEAT_ALL) {
+            openAudio(position);
+        }
+    }
+
+    private void setPrePosition() {
+        int playmode = getPlaymode();
+
+        if (playmode == MusicPlayService.REPEAT_NORMAL) {
+            position --;
+        } else if (playmode == MusicPlayService.REPEAT_SINGLE) {
+            if(!isCompletion){
+                position --;
+            }
+        } else if (playmode == MusicPlayService.REPEAT_ALL) {
+            position --;
+            if(position < 0){
+                position = mediaItems.size()-1;
+            }
+        }
+    }
+
     //得到播放模式
     public int getPlaymode(){
         return playmode;

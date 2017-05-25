@@ -171,6 +171,11 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             setPlayMode();
         } else if ( v == btnPre ) {
             // Handle clicks for btnPre
+            try {
+                service.pre();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         } else if ( v == btnStartPause ) {
             // Handle clicks for btnStartPause
             try {
@@ -189,7 +194,12 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
                 e.printStackTrace();
             }
         } else if ( v == btnNext ) {
-            // Handle clicks for btnNext
+            // Handle clicks for bt nNext
+            try {
+                service.next();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         } else if ( v == btnLyric ) {
             // Handle clicks for btnLyric
         }
