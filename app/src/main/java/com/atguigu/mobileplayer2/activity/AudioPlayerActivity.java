@@ -46,6 +46,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private MyReceiver receiver;
     private Utils utils;
     private final  static  int PROGRESS = 0;
+    private boolean notification;
 
     private Handler handler = new Handler(){
         @Override
@@ -77,6 +78,12 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             service = IMusicPlayService.Stub.asInterface(iBinder);
             if(service != null) {
                 try {
+                    if(notification) {
+                        setViewData();
+                    }else {
+                        service.openAudio(position);
+
+                    }
                     service.openAudio(position);
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -225,7 +232,10 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void getData() {
-        position = getIntent().getIntExtra("position",0);
+        notification = getIntent().getBooleanExtra("notification",false);
+        if(!notification) {
+            position = getIntent().getIntExtra("position",0);
+        }
     }
 
     @Override
