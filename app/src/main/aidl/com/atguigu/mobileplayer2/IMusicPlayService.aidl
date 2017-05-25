@@ -23,5 +23,5 @@ interface IMusicPlayService {
             void seekTo(int position) ;
             void  next();
             void  pre();
-
+            boolean isPlaying();
 }

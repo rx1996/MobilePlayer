@@ -4,16 +4,19 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.atguigu.mobileplayer2.IMusicPlayService;
 import com.atguigu.mobileplayer2.domain.MediaItem;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -83,9 +86,18 @@ public class MusicPlayService extends Service {
         public void pre() throws RemoteException {
             service.pre();
         }
+
+        @Override
+        public boolean isPlaying() throws RemoteException {
+            return mediaPlayer.isPlaying();
+        }
     };
 
     private ArrayList<MediaItem> mediaItems;
+    private MediaPlayer mediaPlayer;
+    private int position;
+    private MediaItem mediaItem;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -120,10 +132,10 @@ public class MusicPlayService extends Service {
                         long size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
                         String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                         String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                        Log.e("TAG", "name==" + name + ",duration==" + duration + ",data===" + data+",artist=="+artist);
+                        Log.e("TAG", "name==" + name + ",duration==" + duration + ",data===" + data + ",artist==" + artist);
 
-                        if(duration > 10*1000){
-                            mediaItems.add(new MediaItem(name, duration, size, data,artist));
+                        if (duration > 10 * 1000) {
+                            mediaItems.add(new MediaItem(name, duration, size, data, artist));
                         }
 
                     }
@@ -147,20 +159,71 @@ public class MusicPlayService extends Service {
      * @param position
      */
     private void openAudio(int position) {
+        this.position = position;
+        if (mediaItems != null && mediaItems.size() > 0) {
+            if(position < mediaItems.size()) {
+                mediaItem = mediaItems.get(position);
+                if (mediaPlayer != null) {
+                    mediaPlayer.reset();
+                    //释放
+                    mediaPlayer = null;
+                }
+                try {
+                    mediaPlayer = new MediaPlayer();
+                    //设置播放地址
+                    mediaPlayer.setDataSource(mediaItem.getData());
+                    //设置三个监听：准备完成，播放出错，播放完成
+                    mediaPlayer.setOnPreparedListener(new MyOnpreparedListener());
+                    mediaPlayer.setOnErrorListener(new MyOnErrorListener());
+                    mediaPlayer.setOnCompletionListener(new MyOnCompletionListener());
+                    //这个异步不写不播放音乐
+                    mediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
+        } else {
+            Toast.makeText(MusicPlayService.this, "视频还没有加载完成", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+    class MyOnpreparedListener implements MediaPlayer.OnPreparedListener{
+
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            start();
+        }
+    }
+    class MyOnErrorListener implements MediaPlayer.OnErrorListener{
+
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            next();
+            return true;
+        }
+    }
+    class MyOnCompletionListener implements MediaPlayer.OnCompletionListener{
+
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            next();
+        }
     }
 
     /**
      * 播放音频
      */
     private void start() {
+        mediaPlayer.start();
     }
 
     /**
      * 暂停音频
      */
     private void pause() {
-
+        mediaPlayer.pause();
     }
 
     /**
