@@ -23,14 +23,19 @@ import android.widget.TextView;
 
 import com.atguigu.mobileplayer2.IMusicPlayService;
 import com.atguigu.mobileplayer2.R;
+import com.atguigu.mobileplayer2.domain.Lyric;
 import com.atguigu.mobileplayer2.domain.MediaItem;
 import com.atguigu.mobileplayer2.service.MusicPlayService;
+import com.atguigu.mobileplayer2.utils.LyricsUtils;
 import com.atguigu.mobileplayer2.utils.Utils;
 import com.atguigu.mobileplayer2.view.LyricShowView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class AudioPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -298,11 +303,32 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             setButtonImage();
             int duration = service.getDuration();
             seekbarAudio.setMax(duration);
+            //解析歌词
+            //1.得到歌词所在路径
+            String audioPath = service.getAudioPath();//mnt/sdcard/audio/beijingbeijing.mp3
+
+            String lyricPath = audioPath.substring(0,audioPath.lastIndexOf("."));//mnt/sdcard/audio/beijingbeijing
+            File file = new File(lyricPath+".lrc");
+            if(!file.exists()){
+                file = new File(lyricPath+".txt");
+            }
+            LyricsUtils lyricsUtils = new LyricsUtils();
+            lyricsUtils.readFile(file);
+
+            //2.传入解析歌词的工具类
+            ArrayList<Lyric> lyrics = lyricsUtils.getLyrics();
+            lyric_show_view.setLyrics(lyrics);
+
+            //3.如果有歌词，就歌词同步
+
+            if(lyricsUtils.isLyric()){
+                handler.sendEmptyMessage(SHOW_LYRIC);
+            }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
         handler.sendEmptyMessage(PROGRESS);
-        handler.sendEmptyMessage(SHOW_LYRIC);
+//        handler.sendEmptyMessage(SHOW_LYRIC);
     }
 
     private void getData() {

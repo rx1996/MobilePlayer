@@ -57,18 +57,18 @@ public class LyricShowView extends TextView {
         //居中
         paintWhite.setTextAlign(Paint.Align.CENTER);
 
-        lyrics = new ArrayList<>();
-        Lyric lyric = new Lyric();
-        for (int i = 0; i < 10000; i++) {
-            //不同歌词
-            lyric.setContent("aaaaaaaaaaaa_" + i);
-            lyric.setSleepTime(2000);
-            lyric.setTimePoint(2000*i);
-            //添加到集合
-            lyrics.add(lyric);
-            //重新创建新对象
-            lyric = new Lyric();
-        }
+//        lyrics = new ArrayList<>();
+//        Lyric lyric = new Lyric();
+//        for (int i = 0; i < 10000; i++) {
+//            //不同歌词
+//            lyric.setContent("aaaaaaaaaaaa_" + i);
+//            lyric.setSleepTime(2000);
+//            lyric.setTimePoint(2000*i);
+//            //添加到集合
+//            lyrics.add(lyric);
+//            //重新创建新对象
+//            lyric = new Lyric();
+//        }
     }
 
     @Override
@@ -130,5 +130,9 @@ public class LyricShowView extends TextView {
         }
 
         invalidate();
+    }
+    public void setLyrics(ArrayList<Lyric> lyrics) {
+        this.lyrics = lyrics;
+
     }
 }
