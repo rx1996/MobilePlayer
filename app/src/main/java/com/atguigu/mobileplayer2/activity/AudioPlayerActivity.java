@@ -26,6 +26,7 @@ import com.atguigu.mobileplayer2.R;
 import com.atguigu.mobileplayer2.domain.MediaItem;
 import com.atguigu.mobileplayer2.service.MusicPlayService;
 import com.atguigu.mobileplayer2.utils.Utils;
+import com.atguigu.mobileplayer2.view.LyricShowView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -52,12 +53,27 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private Utils utils;
     private final  static  int PROGRESS = 0;
     private boolean notification;
+    private static final int SHOW_LYRIC = 1;
+    private LyricShowView lyric_show_view;
 
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
+                case SHOW_LYRIC:
+                    try {
+                        int currentPosition = service.getCurrentPosition();
+
+                        //调用歌词显示控件的setNextShowLyric
+                        lyric_show_view.setNextShowLyric(currentPosition);
+
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    removeMessages(SHOW_LYRIC);
+                    sendEmptyMessage(SHOW_LYRIC);
+                    break;
                 case PROGRESS :
                     try {
                         int currentPosition = service.getCurrentPosition();
@@ -129,6 +145,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         btnStartPause = (Button)findViewById( R.id.btn_start_pause );
         btnNext = (Button)findViewById( R.id.btn_next );
         btnLyric = (Button)findViewById( R.id.btn_lyric );
+        lyric_show_view = (LyricShowView)findViewById(R.id.lyric_show_view);
 
         btnPlaymode.setOnClickListener( this );
         btnPre.setOnClickListener( this );
@@ -285,6 +302,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             e.printStackTrace();
         }
         handler.sendEmptyMessage(PROGRESS);
+        handler.sendEmptyMessage(SHOW_LYRIC);
     }
 
     private void getData() {
@@ -307,6 +325,9 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
 //        }
         //使用EventBus解注册
         EventBus.getDefault().unregister(this);
+        if(handler != null){
+            handler.removeCallbacksAndMessages(null);
+        }
         super.onDestroy();
     }
 

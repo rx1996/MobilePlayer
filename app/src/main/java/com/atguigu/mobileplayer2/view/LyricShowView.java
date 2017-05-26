@@ -24,6 +24,7 @@ public class LyricShowView extends TextView {
     private Paint paintWhite;
     //歌词行间距
     private float textHeight = 80;
+    private int currentPosition;
 
     public LyricShowView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -82,7 +83,7 @@ public class LyricShowView extends TextView {
             //绘制前面部分
             for(int i = index - 1; i >= 0; i--) {
                 //得到前一部分所有的歌词内容
-                String preContent = lyrics.get(index).getContent();
+                String preContent = lyrics.get(i).getContent();
                 tempY = tempY - textHeight;
                 if(tempY < 0) {
                     break;
@@ -109,5 +110,25 @@ public class LyricShowView extends TextView {
         } else {
             canvas.drawText("没有找到歌词...", width / 2, height / 2, paintGreen);
         }
+    }
+
+    public void setNextShowLyric(int currentPosition) {
+        this.currentPosition = currentPosition;
+        if (lyrics == null || lyrics.size() == 0)
+            return;
+
+        for (int i = 1; i < lyrics.size(); i++) {
+
+            if (currentPosition < lyrics.get(i).getTimePoint()) {
+                int tempIndex = i - 1;
+                if (currentPosition >= lyrics.get(tempIndex).getTimePoint()) {
+                    //中间高亮显示的哪一句
+                    index = tempIndex;
+                }
+            }
+
+        }
+
+        invalidate();
     }
 }
