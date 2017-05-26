@@ -22,6 +22,8 @@ import com.atguigu.mobileplayer2.R;
 import com.atguigu.mobileplayer2.activity.AudioPlayerActivity;
 import com.atguigu.mobileplayer2.domain.MediaItem;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -230,7 +232,8 @@ public class MusicPlayService extends Service {
         @Override
         public void onPrepared(MediaPlayer mp) {
             //发广播
-            notifyChange(OPEN_COMPLETE);
+            //notifyChange(OPEN_COMPLETE);
+            EventBus.getDefault().post(mediaItem);
             start();
         }
     }

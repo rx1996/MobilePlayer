@@ -23,8 +23,13 @@ import android.widget.TextView;
 
 import com.atguigu.mobileplayer2.IMusicPlayService;
 import com.atguigu.mobileplayer2.R;
+import com.atguigu.mobileplayer2.domain.MediaItem;
 import com.atguigu.mobileplayer2.service.MusicPlayService;
 import com.atguigu.mobileplayer2.utils.Utils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class AudioPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -80,7 +85,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
                 try {
                     if(notification) {
                         //重新从Service获取数据
-                        setViewData();
+                        setViewData(null);
                     }else {
                         service.openAudio(position);
 
@@ -251,25 +256,29 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private void initData() {
 
         //注册广播
-        receiver = new MyReceiver();
+//        receiver = new MyReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MusicPlayService.OPEN_COMPLETE);
-        registerReceiver(receiver,intentFilter);
+//        registerReceiver(receiver,intentFilter);
         utils = new Utils();
+        //注册-->使用EventBus
+        EventBus.getDefault().register(this);
     }
     class MyReceiver extends BroadcastReceiver{
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            setViewData();
+            setViewData(null);
         }
     }
 
-    private void setViewData() {
-        setButtonImage();
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void setViewData(MediaItem mediaItem) {
+
         try {
             tvArtist.setText(service.getArtistName());
             tvAudioname.setText(service.getAudioName());
+            setButtonImage();
             int duration = service.getDuration();
             seekbarAudio.setMax(duration);
         } catch (RemoteException e) {
@@ -288,14 +297,16 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onDestroy() {
 
-        if(conon != null) {
-            unbindService(conon);
-            conon = null;
-        }
-        if(receiver != null) {
-            unregisterReceiver(receiver);
-            receiver = null;
-        }
+//        if(conon != null) {
+//            unbindService(conon);
+//            conon = null;
+//        }
+//        if(receiver != null) {
+//            unregisterReceiver(receiver);
+//            receiver = null;
+//        }
+        //使用EventBus解注册
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
