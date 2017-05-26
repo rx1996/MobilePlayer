@@ -16,10 +16,15 @@ import java.util.ArrayList;
  */
 
 public class LyricShowView extends TextView {
-    private Paint paint;
+    private Paint paintGreen;
     private int width;
     private int height;
     private ArrayList<Lyric> lyrics;
+    private int index = 0;
+    private Paint paintWhite;
+    //歌词行间距
+    private float textHeight = 80;
+
     public LyricShowView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initView();
@@ -32,21 +37,77 @@ public class LyricShowView extends TextView {
     }
 
     private void initView() {
-        paint = new Paint();
+        paintGreen = new Paint();
         //设置颜色
-        paint.setColor(Color.GREEN);
+        paintGreen.setColor(Color.GREEN);
         //设置抗锯齿
-        paint.setAntiAlias(true);
-        paint.setTextSize(16);
+        paintGreen.setAntiAlias(true);
+        paintGreen.setTextSize(60);
         //居中
-        paint.setTextAlign(Paint.Align.CENTER);
+        paintGreen.setTextAlign(Paint.Align.CENTER);
 
 
+        paintWhite = new Paint();
+        //设置颜色
+        paintWhite.setColor(Color.WHITE);
+        //设置抗锯齿
+        paintWhite.setAntiAlias(true);
+        paintWhite.setTextSize(60);
+        //居中
+        paintWhite.setTextAlign(Paint.Align.CENTER);
+
+        lyrics = new ArrayList<>();
+        Lyric lyric = new Lyric();
+        for (int i = 0; i < 10000; i++) {
+            //不同歌词
+            lyric.setContent("aaaaaaaaaaaa_" + i);
+            lyric.setSleepTime(2000);
+            lyric.setTimePoint(2000*i);
+            //添加到集合
+            lyrics.add(lyric);
+            //重新创建新对象
+            lyric = new Lyric();
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawText("没有找到歌词...",width/2,height/2,paint);
+        if(lyrics != null && lyrics.size() > 0) {
+            //当前歌词
+            String currentContent = lyrics.get(index).getContent();
+            canvas.drawText(currentContent,width/2,height/2,paintGreen);
+            //得到中间句的坐标
+            float tempY = height / 2;
+            //绘制前面部分
+            for(int i = index - 1; i >= 0; i--) {
+                //得到前一部分所有的歌词内容
+                String preContent = lyrics.get(index).getContent();
+                tempY = tempY - textHeight;
+                if(tempY < 0) {
+                    break;
+                }
+                canvas.drawText(preContent,width/2,tempY,paintWhite);
+
+            }
+            tempY = height / 2;
+            //绘制后面部分
+            for (int i = index + 1; i < lyrics.size(); i++) {
+                //得到后一部分所有的歌词内容
+                String nextContent = lyrics.get(i).getContent();
+
+                tempY = tempY + textHeight;
+                if (tempY > height) {
+                    break;
+                }
+
+                //绘制内容
+                canvas.drawText(nextContent, width / 2, tempY, paintWhite);
+            }
+
+
+        } else {
+            canvas.drawText("没有找到歌词...", width / 2, height / 2, paintGreen);
+        }
     }
 }
