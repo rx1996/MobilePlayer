@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.drawable.AnimationDrawable;
+import android.media.audiofx.Visualizer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -28,6 +29,7 @@ import com.atguigu.mobileplayer2.domain.MediaItem;
 import com.atguigu.mobileplayer2.service.MusicPlayService;
 import com.atguigu.mobileplayer2.utils.LyricsUtils;
 import com.atguigu.mobileplayer2.utils.Utils;
+import com.atguigu.mobileplayer2.view.BaseVisualizerView;
 import com.atguigu.mobileplayer2.view.LyricShowView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -60,6 +62,9 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private boolean notification;
     private static final int SHOW_LYRIC = 1;
     private LyricShowView lyric_show_view;
+
+    private BaseVisualizerView visualizerview;
+    private Visualizer mVisualizer;
 
     private Handler handler = new Handler(){
         @Override
@@ -151,6 +156,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         btnNext = (Button)findViewById( R.id.btn_next );
         btnLyric = (Button)findViewById( R.id.btn_lyric );
         lyric_show_view = (LyricShowView)findViewById(R.id.lyric_show_view);
+        visualizerview = (BaseVisualizerView) findViewById(R.id.visualizerview);
 
         btnPlaymode.setOnClickListener( this );
         btnPre.setOnClickListener( this );
@@ -329,12 +335,40 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         }
         handler.sendEmptyMessage(PROGRESS);
 //        handler.sendEmptyMessage(SHOW_LYRIC);
+        //显示音乐频谱
+        setupVisualizerFxAndUi();
+    }
+    /**
+     * 生成一个VisualizerView对象，使音频频谱的波段能够反映到 VisualizerView上
+     */
+    private void setupVisualizerFxAndUi() {
+
+        int audioSessionid = 0;
+        try {
+            audioSessionid = service.getAudioSessionId();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        System.out.println("audioSessionid==" + audioSessionid);
+        mVisualizer = new Visualizer(audioSessionid);
+        // 参数内必须是2的位数
+        mVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+        // 设置允许波形表示，并且捕获它
+        visualizerview.setVisualizer(mVisualizer);
+        mVisualizer.setEnabled(true);
     }
 
     private void getData() {
         notification = getIntent().getBooleanExtra("notification",false);
         if(!notification) {
             position = getIntent().getIntExtra("position",0);
+        }
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isFinishing()) {
+            mVisualizer.release();
         }
     }
 
