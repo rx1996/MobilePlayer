@@ -4,12 +4,15 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.atguigu.mobileplayer2.fragment.BaseFragment;
 import com.atguigu.mobileplayer2.pager.LocalAudioPager;
@@ -146,5 +149,38 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+    /**
+     * 是否已经退出
+     */
+    private boolean isExit = false;
+
+
+    /**
+     * 防止不小心点击退出
+     * @param keyCode
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode ==KeyEvent.KEYCODE_BACK){
+            if(position!= 0){
+                rg_main.check(R.id.rb_local_video);
+                return true;
+            }else if(!isExit){
+                Toast.makeText(MainActivity.this, "再按一次推出软件", Toast.LENGTH_SHORT).show();
+                isExit = true;
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isExit = false;
+                    }
+                }, 2000);
+
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }
