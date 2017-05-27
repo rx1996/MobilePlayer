@@ -12,7 +12,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.atguigu.mobileplayer2.R;
+import com.atguigu.mobileplayer2.adapter.SearchAdapter;
+import com.atguigu.mobileplayer2.domain.SearchBean;
 import com.atguigu.mobileplayer2.utils.JsonParser;
+import com.google.gson.Gson;
 import com.iflytek.cloud.ErrorCode;
 import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.RecognizerResult;
@@ -29,6 +32,7 @@ import org.xutils.x;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener {
@@ -37,10 +41,12 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private ImageView ivVoice;
     private TextView tvGo;
     private ListView lv;
+    private SearchAdapter adapter;
     // 用HashMap存储听写结果
     private HashMap<String, String> mIatResults = new LinkedHashMap<String, String>();
     public static final String NET_SEARCH_URL = "http://hot.news.cntv.cn/index.php?controller=list&action=searchList&sort=date&n=20&wd=";
     private String url;
+    private List<SearchBean.ItemsBean> datas;
 
     /**
      * Find the Views in the layout<br />
@@ -110,11 +116,12 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void getDataFromNet(String url) {
-        RequestParams request = new RequestParams(url);
+       final RequestParams request = new RequestParams(url);
         x.http().get(request, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 Log.e("TAG","请求成功-result=="+result);
+                processData(result);
             }
 
             @Override
@@ -132,6 +139,15 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
 
             }
         });
+    }
+
+    private void processData(String json) {
+        SearchBean searchBean = new Gson().fromJson(json, SearchBean.class);
+        datas = searchBean.getItems();
+        if(datas != null && datas.size() >0){
+            adapter = new SearchAdapter(this,datas);
+            lv.setAdapter(adapter);
+        }
     }
 
     class MyRecognizerDialogListener implements RecognizerDialogListener {
