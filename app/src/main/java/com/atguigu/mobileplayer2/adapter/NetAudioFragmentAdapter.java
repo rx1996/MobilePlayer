@@ -242,7 +242,7 @@ public class NetAudioFragmentAdapter extends BaseAdapter {
 
             ivImageIcon.setImageResource(R.drawable.bg_item);
             if (mediaItem.getImage() != null && mediaItem.getImage() != null && mediaItem.getImage().getThumbnail_small() != null) {
-                Glide.with(context).load(mediaItem.getImage().getDownload_url().get(0)).placeholder(R.drawable.bg_item).error(R.drawable.bg_item).diskCacheStrategy(DiskCacheStrategy.ALL).into(ivImageIcon);
+                Glide.with(context).load(mediaItem.getImage().getThumbnail_small().get(0)).placeholder(R.drawable.bg_item).error(R.drawable.bg_item).diskCacheStrategy(DiskCacheStrategy.ALL).into(ivImageIcon);
 //                Picasso.with(context)
 //                        .load(mediaItem.getImage().getThumbnail_small().get(0))
 //                        .placeholder(R.drawable.bg_item)
