@@ -3,6 +3,8 @@ package com.atguigu.mobileplayer2;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -22,12 +24,17 @@ import com.atguigu.mobileplayer2.pager.NetVideoPager;
 
 import java.util.ArrayList;
 
+import fm.jiecao.jcvideoplayer_lib.JCVideoPlayer;
+
 public class MainActivity extends AppCompatActivity {
     private RadioGroup rg_main;
     private ArrayList<BaseFragment> fragments;
     private int position;
     //缓存当前显示的Fragment
     private Fragment tempFragment;
+    private SensorManager sensorManager;
+    private JCVideoPlayer.JCAutoFullscreenListener sensorEventListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         rg_main.setOnCheckedChangeListener(new MyOnCheckedChangeListener());
         //默认选择本地视频
         rg_main.check(R.id.rb_local_video);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorEventListener = new JCVideoPlayer.JCAutoFullscreenListener();
     }
     private void initFragment() {
         //把各个页面实例化放入集合中
@@ -134,11 +143,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Sensor accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(sensorEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        sensorManager.unregisterListener(sensorEventListener);
+        JCVideoPlayer.releaseAllVideos();
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (JCVideoPlayer.backPress()) {
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -183,4 +205,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onKeyDown(keyCode, event);
     }
+
 }
